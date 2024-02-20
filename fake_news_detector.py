@@ -16,7 +16,6 @@ y = df["label"]
 vectorizer = TfidfVectorizer()
 X_vec = vectorizer.fit_transform(X)
 
-
 # Split the data into training and test sets
 X_train, X_test, y_train, y_test = train_test_split(X_vec, y, test_size=0.25, random_state=42)
 
@@ -24,10 +23,25 @@ X_train, X_test, y_train, y_test = train_test_split(X_vec, y, test_size=0.25, ra
 clf = LogisticRegression()
 clf.fit(X_train, y_train)
 
-# Evaluate the model on the test set
-y_pred = clf.predict(X_test)
-accuracy = np.mean(y_pred == y_test)
-print("Accuracy:", accuracy)
+# Define the Streamlit app
+def main():
+    st.title("Fake News Detector")
 
-# Deploy the model
-# ...
+    # User input for news text
+    user_input = st.text_area("Enter the news text to check if it's fake or real:")
+
+    if st.button("Check"):
+        # Preprocess the user input
+        user_input_vec = vectorizer.transform([user_input])
+
+        # Predict the label
+        prediction = clf.predict(user_input_vec)[0]
+
+        # Display the prediction
+        if prediction == 1:
+            st.error("Fake News")
+        else:
+            st.success("Real News")
+
+if __name__ == "__main__":
+    main()
