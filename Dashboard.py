@@ -1,160 +1,179 @@
-import streamlit as st
-import yfinance as yf
 import pandas as pd
 import plotly.express as px
+import streamlit as st
 import numpy as np
-from datetime import datetime, timedelta, date
-from dateutil.relativedelta import relativedelta;
-from sklearn.model_selection import train_test_split;
-from sklearn.ensemble import RandomForestRegressor;
-import google.generativeai as palm
-
-# Create the container
-title = st.container()
-sidebar = st.container()
-about = st.container()
-dfset = st.container()
-graph = st.container()
-open_close = st.container()
-high_low = st.container()
-volume = st.container()
-change = st.container()
-verdict = st.container()
-prediction = st.container()
-
-exchange = pd.read_csv('https://raw.githubusercontent.com/dhhagan/stocks/master/scripts/stock_info.csv')
-
-# nasdaq stocks
-nasdaq = exchange[exchange['Exchange'] == 'NASDAQ'].Ticker
-
-# nyse stocks
-nyse = exchange[exchange['Exchange'] == 'NYSE'].Ticker
-
-# companies and tickers
-dictionary = dict(zip(exchange.Ticker, exchange.Name))
 
 
-# Title
-with title:
-    st.title('Trade Prophet')
-    st.markdown('This app built with Streamlit would give you the performance of the stocks today.')
+st.set_page_config(page_title='Superstore Sales Dashboard', page_icon=":bar_chart", layout="wide")
 
-# Sidebar
-with sidebar:
-    st.sidebar.title('Options')
-    market = st.sidebar.selectbox('Enter Market', np.array(['NYSE', 'NASDAQ']))
-    if market == 'NYSE':
-        ticker = st.sidebar.selectbox('Enter Ticker', nyse)
-    elif market == 'NASDAQ':
-        ticker = st.sidebar.selectbox('Enter Ticker', nasdaq)
-    start = st.sidebar.date_input('Enter Start Date', date.today() - timedelta(days=100))
-    end = st.sidebar.date_input('Enter End Date', date.today())
-    future_days = st.sidebar.slider('Enter Future Days', 30, 100) 
+st.title(':bar_chart: SuperStore Exploratory Data Analysis')
+st.markdown('<style>div.block-container{padding-top: 1rem;}</style>', unsafe_allow_html=True)
 
-# Dataset
-df = yf.download(ticker, start=start, end=end)
-df = df[::-1]
+file = st.file_uploader(":file_folder: Upload your file", type=['csv'])
+if file is not None:
+    file_name = file.name
 
-with about:
-    st.header(dictionary[ticker])
-     
-# Volume
-with volume:
-    
-    fig_vol = px.area(df, x=df.index, y="Volume", title='Trading Volume over the interval')
-    st.plotly_chart(fig_vol)
+    st.write(f"File Name: {file_name}")
 
-# Open Close
-with open_close:
-    st.subheader('Open and Close')
-    fig_oc = px.line(df, x = df.index, y = ["Open", "Close"], title = "Open and Close over the interval")
-    st.plotly_chart(fig_oc)
+    # Save the uploaded file
+    with open(file_name, "wb") as f:
+        f.write(file.getbuffer())
 
-# High Low
-with high_low:
-    st.subheader('High and Low')
-    fig_hl = px.line(df, x = df.index, y = ["High", "Low"], title = "High and Low over the interval")
-    st.plotly_chart(fig_hl)
+    st.success(f"File saved successfully: {file_name}")
 
-# Change
+    # Read the uploaded file into a DataFrame
+    df = pd.read_csv(file_name)
+else:
+    df = pd.read_csv('https://github.com/SadeekFarhan21/SuperStoreSales/blob/main/Farhan.csv')
 
-with change:
-    st.subheader('Change')
-    # Data for current day
-    close_now = round(float(str(df.head(1)['Close'].values[0])), 2)
-    open_now = round(float(str(df.head(1)['Open'].values[0])), 2)
-    high_now = round(float(str(df.head(1)['High'].values[0])), 2)
-    low_now = round(float(str(df.head(1)['Low'].values[0])), 2)
-    volume_now = int(str(df.head(1)['Volume'].values[0]))
+col1, col2 = st.columns((2))
+df['Order Date'] = pd.to_datetime(df['Order Date'])
+start_date = pd.to_datetime(df["Order Date"]).min()
+end_date = pd.to_datetime(df["Order Date"]).max()
 
-    # Data for the first day on the dataset
-    close_past = round(float(str(df.tail(1)['Close'].values[0])), 2)
-    open_past = round(float(str(df.tail(1)['Open'].values[0])), 2)
-    high_past = round(float(str(df.tail(1)['High'].values[0])), 2)
-    low_past = round(float(str(df.tail(1)['Low'].values[0])), 2)
-    volume_past = int(str(df.tail(1)['Volume'].values[0]))
+with col1:
+    date1 = pd.to_datetime(st.date_input("Start Date", start_date))
 
-    # Change in the price
-    close_change = round(close_now - close_past, 2)
-    open_change = round(open_now - open_past, 2)
-    high_change = round(high_now - high_past, 2)
-    low_change = round(low_now - low_past, 2)
-    volume_change = volume_now - volume_past
+with col2:
+    date2 = pd.to_datetime(st.date_input("End Date", end_date))
 
-    # Change in percentage based on the first day
-    close_percent = round(close_change / close_past * 100, 2)
-    open_percent = round(open_change / open_past * 100, 2)
-    high_percent = round(high_change / high_past * 100, 2)
-    low_percent = round(low_change / low_past * 100)
-    volume_percent = round(volume_change / volume_past * 100, 2)
+df = df[(df["Order Date"] >= date1) & (df["Order Date"] <= date2)].copy()
 
-    # Open and Close
-    col1, col2 = st.columns(2)
-    col1.metric('Close', str(close_now), str(close_change) +' (' + str(close_percent) + '%)')
-    col2.metric('Open', str(open_now), str(open_change) + ' (' + str(open_percent) + '%)')
+st.sidebar.header('Choose your filter: ')
+region = st.sidebar.multiselect("Pick your Region", df["Region"].unique())
+if not region:
+    df2 = df.copy()
+else:
+    df2 = df[df["Region"].isin(region)]
 
-    # High and Low
-    col3, col4 = st.columns(2)
-    col3.metric('High', str(high_now), str(high_change) + ' (' + str(high_percent) + '%)')
-    col4.metric('Low', str(low_now), str(low_change) +'(' + str(low_percent) + '%)')
+state = st.sidebar.multiselect("Pick the State", df2["State"].unique())
+if not state:
+    df3 = df2.copy()
+else:
+    df3 = df2[df2["State"].isin(state)]
 
-    # Chagne in volume
-    col5, col6, col7 = st.columns(3)
-    col5.metric('Volume', str(volume_now), str(volume_change) +'(' + str(volume_percent) + '%)')
+city = st.sidebar.multiselect("Pick the City",df3["City"].unique())
 
-    with prediction:
-        st.header('Prediction')
-        data = yf.download(ticker, start=date.today() - relativedelta(days=future_days * 100), end=date.today())
-        data['Prediction'] = data['Close'].shift(-future_days)
-        X = np.array(data.drop(columns=['Prediction'], axis=1))[:-future_days]
-        y = np.array(data['Prediction'])[:-future_days]
-        x_train, x_test, y_train, y_test = train_test_split(X, y, test_size=0.2)
-        model = RandomForestRegressor(n_estimators=10, max_depth=5, random_state=42)
-        x_future = data.drop(columns=['Prediction'], axis=1)[:-future_days]
-        x_future = x_future.tail(future_days)
-        x_future = np.array(x_future)
-        model.fit(x_train, y_train)
-        forest_prediction = model.predict(x_future)
-        predictions = forest_prediction
-        valid = data[X.shape[0]:].copy()
-        valid['Prediction'] = predictions
-        valid.drop(columns=['Prediction'], axis=1)
-        predict_graph = px.line(valid, x=valid.index, y=['Close', 'Prediction'])
-        predict_graph.update_layout(title='Close vs Prediction', xaxis_title='Date', yaxis_title='Price')
-        st.plotly_chart(predict_graph)
+if not region and not state and not city:
+    filtered_df = df
+elif not state and not city:
+    filtered_df = df[df["Region"].isin(region)]
+elif not region and not city:
+    filtered_df = df[df["State"].isin(state)]
+elif state and city:
+    filtered_df = df3[df["State"].isin(state) & df3["City"].isin(city)]
+elif region and city:
+    filtered_df = df3[df["Region"].isin(region) & df3["City"].isin(city)]
+elif region and state:
+    filtered_df = df3[df["Region"].isin(region) & df3["State"].isin(state)]
+elif city:
+    filtered_df = df3[df3["City"].isin(city)]
+else:
+    filtered_df = df3[df3["Region"].isin(region) & df3["State"].isin(state) & df3["City"].isin(city)]
 
-        score = str(float(round(model.score(x_test, y_test) * 100, 2)))
-        st.subheader('Model Score: ' + score + '%')
+category_df = filtered_df.groupby(by = ["Category"], as_index = False)["Sales"].sum()
 
-    with verdict:
-        if (float(volume_change) > 0 and float(close_change) > 0) or (float(volume_change) < 0 and float(close_change) < 0):
-            verdict = 'This stock was 🐮ish at that time.'
-            text = 'Bullish market, in securities and commodities trading, a rising market. A bull is an investor who expects prices to rise and, on this assumption, purchases a security or commodity in hopes of reselling it later for a profit. A bullish market is one in which prices are generally expected to rise. Compare bear markets, which are those in which prices are expected to fall.'
-        else:
-            verdict = 'This stock was 🐻ish at that time'
-            text = 'A bear market is when a market experiences prolonged price declines. It typically describes a condition in which securities prices fall 20% or more from recent highs amid widespread pessimism and negative investor sentiment. A bear market is one in which prices are generally expected to fall. Compare bullish markets, which are those in which prices are expected to rise.'
+if not region and not state and not city:
+    filtered_df = df
+elif not state and not city:
+    filtered_df = df[df["Region"].isin(region)]
+elif not region and not city:
+    filtered_df = df[df["State"].isin(state)]
+elif state and city:
+    filtered_df = df3[df["State"].isin(state) & df3["City"].isin(city)]
+elif region and city:
+    filtered_df = df3[df["Region"].isin(region) & df3["City"].isin(city)]
+elif region and state:
+    filtered_df = df3[df["Region"].isin(region) & df3["State"].isin(state)]
+elif city:
+    filtered_df = df3[df3["City"].isin(city)]
+else:
+    filtered_df = df3[df3["Region"].isin(region) & df3["State"].isin(state) & df3["City"].isin(city)]
 
-        st.header('Verdict')
-        st.subheader(verdict)
-        st.write(text)
+category_df = filtered_df.groupby(by = ["Category"], as_index = False)["Sales"].sum()
+
+with col1:
+    st.subheader("Category wise Sales")
+    fig = px.bar(category_df, x = "Category", y = "Sales", text = ['${:,.2f}'.format(x) for x in category_df["Sales"]],
+                 template = "seaborn")
+    st.plotly_chart(fig,use_container_width=True, height = 200)
+
+with col2:
+    st.subheader("Region wise Sales")
+    fig = px.pie(filtered_df, values = "Sales", names = "Region", hole = 0.5)
+    fig.update_traces(text = filtered_df["Region"], textposition = "outside")
+    st.plotly_chart(fig,use_container_width=True)
+
+cl1, cl2 = st.columns((2))
+with cl1:
+    with st.expander("Category_ViewData"):
+        st.write(category_df.style.background_gradient(cmap="Blues"))
+        csv = category_df.to_csv(index = False).encode('utf-8')
+        st.download_button("Download Data", data = csv, file_name = "Category.csv", mime = "text/csv",
+                            help = 'Click here to download the data as a CSV file')
+
+with cl2:
+    with st.expander("Region_ViewData"):
+        region = filtered_df.groupby(by = "Region", as_index = False)["Sales"].sum()
+        st.write(region.style.background_gradient(cmap="Oranges"))
+        csv = region.to_csv(index = False).encode('utf-8')
+        st.download_button("Download Data", data = csv, file_name = "Region.csv", mime = "text/csv",
+                        help = 'Click here to download the data as a CSV file')
         
+filtered_df["month_year"] = filtered_df["Order Date"].dt.to_period("M")
+st.subheader('Time Series Analysis')
+
+linechart = pd.DataFrame(filtered_df.groupby(filtered_df["month_year"].dt.strftime("%Y : %b"))["Sales"].sum()).reset_index()
+fig2 = px.line(linechart, x = "month_year", y="Sales", labels = {"Sales": "Amount"},height=500, width = 1000,template="gridon")
+st.plotly_chart(fig2,use_container_width=True)
+
+with st.expander("View Data of TimeSeries:"):
+    st.write(linechart.T.style.background_gradient(cmap="Blues"))
+    csv = linechart.to_csv(index=False).encode("utf-8")
+    st.download_button('Download Data', data = csv, file_name = "TimeSeries.csv", mime ='text/csv')
+
+# Create a treem based on Region, category, sub-Category
+st.subheader("Hierarchical view of Sales using TreeMap")
+fig3 = px.treemap(filtered_df, path = ["Region","Category","Sub-Category"], values = "Sales",hover_data = ["Sales"],
+                  color = "Sub-Category")
+fig3.update_layout(width = 800, height = 650)
+st.plotly_chart(fig3, use_container_width=True)
+
+chart1, chart2 = st.columns((2))
+with chart1:
+    st.subheader('Segment wise Sales')
+    fig = px.pie(filtered_df, values = "Sales", names = "Segment", template = "plotly_dark")
+    fig.update_traces(text = filtered_df["Segment"], textposition = "inside")
+    st.plotly_chart(fig,use_container_width=True)
+
+with chart2:
+    st.subheader('Category wise Sales')
+    fig = px.pie(filtered_df, values = "Sales", names = "Category", template = "gridon")
+    fig.update_traces(text = filtered_df["Category"], textposition = "inside")
+    st.plotly_chart(fig,use_container_width=True)
+
+import plotly.figure_factory as ff
+st.subheader(":point_right: Month wise Sub-Category Sales Summary")
+with st.expander("Summary_Table"):
+    df_sample = df[0:5][["Region","State","City","Category","Sales","Profit","Quantity"]]
+    fig = ff.create_table(df_sample, colorscale = "Cividis")
+    st.plotly_chart(fig, use_container_width=True)
+
+    st.markdown("Month wise sub-Category Table")
+    filtered_df["month"] = filtered_df["Order Date"].dt.month_name()
+    sub_category_Year = pd.pivot_table(data = filtered_df, values = "Sales", index = ["Sub-Category"],columns = "month")
+    st.write(sub_category_Year.style.background_gradient(cmap="Blues"))
+
+# Create a scatter plot
+data1 = px.scatter(filtered_df, x = "Sales", y = "Profit", size = "Quantity")
+data1['layout'].update(title="Relationship between Sales and Profits using Scatter Plot.",
+                       titlefont = dict(size=20),xaxis = dict(title="Sales",titlefont=dict(size=19)),
+                       yaxis = dict(title = "Profit", titlefont = dict(size=19)))
+st.plotly_chart(data1,use_container_width=True)
+
+with st.expander("View Data"):
+    st.write(filtered_df.iloc[:500,1:20:2].style.background_gradient(cmap="Oranges"))
+
+# Download orginal DataSet
+csv = df.to_csv(index = False).encode('utf-8')
+st.download_button('Download Data', data = csv, file_name = "Data.csv",mime = "text/csv")

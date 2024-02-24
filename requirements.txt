@@ -1,8 +1,11 @@
-scikit-learn
-openai
-yfinance
-numpy
 pandas
 plotly
 streamlit
-google.generativeai
+pandas
+streamlit
+plotly
+streamlit-analytics
+yfinance
+xlrd
+seaborn
+matplotlib
