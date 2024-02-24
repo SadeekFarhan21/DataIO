@@ -6,6 +6,6 @@ openai
 yfinance
 numpy
 pandas
-plotly
+plotly.express
 streamlit
 google.generativeai
