@@ -1,11 +1,8 @@
-tensorflow
-streamlit
-scikit-learn
 scikit-learn
 openai
 yfinance
 numpy
 pandas
-plotly.express
+plotly
 streamlit
 google.generativeai
