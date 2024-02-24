@@ -6,6 +6,9 @@ from sklearn.linear_model import LogisticRegression
 import streamlit as st
 import plotly.express as px
 
+# Define the Streamlit app
+st.title("Fake News Detector")
+
 # Load the fake and real news dataset
 df = pd.read_csv("news.csv")
 
@@ -24,32 +27,27 @@ X_train, X_test, y_train, y_test = train_test_split(X_vec, y, test_size=0.25, ra
 clf = LogisticRegression()
 clf.fit(X_train, y_train)
 
-# Define the Streamlit app
-def main():
-    st.title("Fake News Detector")
-
-    # User input for news text
+# User input for news text
+with st.container():
     user_input = st.text_area("Enter the news text to check if it's fake or real:")
 
+with st.container():
     if st.button("Check"):
-        # Preprocess the user input
+# Preprocess the user input
         user_input_vec = vectorizer.transform([user_input])
 
-        # Predict the label
-        prediction = clf.predict(user_input_vec)[0]
+# Predict the label
+prediction = clf.predict(user_input_vec)[0]
 
-        # Display the prediction
-        if prediction == 1:
-            st.error("Fake News")
-        else:
-            st.success("Real News")
+# Display the prediction
+if prediction == 1:
+    st.error("Fake News")
+else:
+    st.success("Real News")
 
+with st.container():
     st.subheader("Random Plotly Chart")
-    random_data = pd.DataFrame({
-        'x': np.random.randn(100),
-        'y': np.random.randn(100)
-    })
+    random_data = pd.DataFrame({'x': np.random.randn(100),'y': np.random.randn(100)})
     fig = px.scatter(random_data, x='x', y='y')
     st.plotly_chart(fig)
-if __name__ == "__main__":
-    main()
+
