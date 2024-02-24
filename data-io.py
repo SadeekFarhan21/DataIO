@@ -4,6 +4,7 @@ from sklearn.model_selection import train_test_split
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.linear_model import LogisticRegression
 import streamlit as st
+import plotly.express as px
 
 # Load the fake and real news dataset
 df = pd.read_csv("news.csv")
@@ -43,5 +44,12 @@ def main():
         else:
             st.success("Real News")
 
+    st.subheader("Random Plotly Chart")
+    random_data = pd.DataFrame({
+        'x': np.random.randn(100),
+        'y': np.random.randn(100)
+    })
+    fig = px.scatter(random_data, x='x', y='y')
+    st.plotly_chart(fig)
 if __name__ == "__main__":
     main()
