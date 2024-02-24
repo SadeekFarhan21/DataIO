@@ -1,7 +1,8 @@
 import pandas as pd
 import plotly.express as px
 import streamlit as st
-import numpy as np
+import matplotlib.pyplot as plt
+
 
 
 st.set_page_config(page_title='Data IO 2024', page_icon=":bar_chart", layout="wide")
@@ -53,6 +54,9 @@ else:
     df3 = df2[df2["State"].isin(state)]
 
 city = st.sidebar.multiselect("Pick the City",df3["City"].unique())
+
+
+
 
 if not region and not state and not city:
     filtered_df = df
