@@ -1,7 +1,6 @@
 import pandas as pd
 import plotly.express as px
 import streamlit as st
-import matplotlib.pyplot as plt
 
 
 
@@ -9,6 +8,10 @@ st.set_page_config(page_title='Data IO 2024', page_icon=":bar_chart", layout="wi
 
 st.title(':bar_chart: Farhan Luke Ragav Abhinav')
 st.markdown('<style>div.block-container{padding-top: 1rem;}</style>', unsafe_allow_html=True)
+
+data_reading = st.container()
+eda = st.container()
+algorithms = st.container()
 
 file = st.file_uploader(":file_folder: Upload your file", type=['csv'])
 if file is not None:
@@ -24,8 +27,6 @@ if file is not None:
 
     # Read the uploaded file into a DataFrame
     df = pd.read_csv(file_name)
-else:
-    df = pd.read_excel('Superstore.xls')
 
 col1, col2 = st.columns((2))
 df['Order Date'] = pd.to_datetime(df['Order Date'])
