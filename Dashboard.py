@@ -24,7 +24,7 @@ if file is not None:
     # Read the uploaded file into a DataFrame
     df = pd.read_csv(file_name)
 else:
-    df = pd.read_csv('https://github.com/SadeekFarhan21/SuperStoreSales/blob/main/Farhan.csv')
+    df = pd.read_excel('Superstore.xls')
 
 col1, col2 = st.columns((2))
 df['Order Date'] = pd.to_datetime(df['Order Date'])
