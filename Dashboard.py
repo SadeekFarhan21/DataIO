@@ -4,13 +4,13 @@ import streamlit as st
 
 # Set page configuration
 st.set_page_config(
-    page_title='Data IO 2024',
+    page_title='Team Janardhan',
     page_icon=":bar_chart:",
     layout="wide",
 )
 
 # Title and styling
-st.title(':bar_chart: Bike Data Analytics Analytics')
+st.title(':bar_chart: Bike Data Analytics')
 st.markdown('<style>div.block-container{padding-top: 1rem;}</style>', unsafe_allow_html=True)
 
 images = [
@@ -37,7 +37,7 @@ st.image('000022.png')
 
 # precentage of trips in seasons
 st.markdown('Most people bike during spring and summer')
-st.title('Precent of Trips across differenet seasons')
+st.title('Percent of Trips across differenet seasons')
 st.image('000010.png')
 
 # across the week
