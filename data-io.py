@@ -1,6 +1,7 @@
 import streamlit as st
 import yfinance as yf
 import pandas as pd
+import bokeh
 import plotly.express as px
 import numpy as np
 from datetime import datetime, timedelta, date
