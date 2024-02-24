@@ -128,8 +128,17 @@ st.image('longestride.png')
 st.title('Distribution of Member and Casual')
 st.image('newplot.png')
 
+
+st.title('Stolen Bikes')
 st.code('''
         
 null_vals = df.isnull().sum()
 null_vals
 ''')
+
+st.code('''
+start_lat                  0
+start_lng                  0
+end_lat                 5961
+end_lng                 5961        
+        ''')
