@@ -47,7 +47,8 @@ st.image('000052.png')
 # average duration in the week
 st.title('Average duration of the trips during the week')
 st.image('avgdurationcool.png')
-
+st.title('Most popular Stations')
+st.image('mostPopularStations.png')
 # starting location
 st.title('Most popular starting locations')
 import plotly.graph_objects as go
