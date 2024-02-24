@@ -4,9 +4,9 @@ import streamlit as st
 import numpy as np
 
 
-st.set_page_config(page_title='Superstore Sales Dashboard', page_icon=":bar_chart", layout="wide")
+st.set_page_config(page_title='Data IO 2024', page_icon=":bar_chart", layout="wide")
 
-st.title(':bar_chart: SuperStore Exploratory Data Analysis')
+st.title(':bar_chart: Farhan Luke Ragav')
 st.markdown('<style>div.block-container{padding-top: 1rem;}</style>', unsafe_allow_html=True)
 
 file = st.file_uploader(":file_folder: Upload your file", type=['csv'])
