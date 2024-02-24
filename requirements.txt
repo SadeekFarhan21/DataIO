@@ -1,6 +1,6 @@
 scikit-learn
 openai
-yfinance==0.2.32
+yfinance
 numpy
 pandas
 plotly
