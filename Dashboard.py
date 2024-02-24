@@ -127,3 +127,9 @@ st.image('longestride.png')
 
 st.title('Distribution of Member and Casual')
 st.image('newplot.png')
+
+st.code('''
+        
+null_vals = df.isnull().sum()
+null_vals
+''')
